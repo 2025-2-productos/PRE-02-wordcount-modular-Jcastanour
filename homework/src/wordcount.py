@@ -1,40 +1,41 @@
 # obtain a list of files in the input directory
-import os
+import sys
 
-from homework.src.write_count_words import write_count_words
-
-
-def read_all_lines():
-    all_lines = []
-    input_files_list = os.listdir("data/input/")
-
-    for filename in input_files_list:
-        with open(filename, "r", encoding="utf-8") as f:
-            lines = f.readlines()
-            all_lines.extend(lines)
-    return all_lines
+from ._internals.count_words import count_words
+from ._internals.preprocess_lines import preprocess_lines
+from ._internals.read_all_lines import read_all_lines
+from ._internals.split_into_words import split_into_words
+from ._internals.write_word_counts import write_word_counts
 
 
-def main():
-    ###
-    # all_lines = read_all_lines()
-    input_files_list = os.listdir("data/input/")
+def main(input_folder=None, output_folder=None):
+    # Caso 1: main() llamado directamente → usar carpetas por defecto
+    if input_folder is None or output_folder is None:
 
-    ### read all lines
+        # Caso 2: si fue llamado por CLI con argumentos
+        if len(sys.argv) == 3:
+            input_folder = sys.argv[1]
+            output_folder = sys.argv[2]
+        else:
+            # Defaults para los tests
+            input_folder = "data/input"
+            output_folder = "data/output"
+
+    ## read all lines
+    all_lines = read_all_lines(input_folder)
+
     ### preprocess lines
+    all_lines = preprocess_lines(all_lines)
+
     ### split in words
+    words = split_into_words(all_lines)
+
     ### count words
-    ### write count words
+    counter = count_words(words)
 
-    # count the frequency of the words in the files in the input directory
-    counter = {}
-    for filename in input_files_list:
-        with open("data/input/" + filename) as f:
-            for l in f:
-                for w in l.split():
-                    w = w.lower().strip(",.!?")
-                    counter[w] = counter.get(w, 0) + 1
+    ### write word counts
+    write_word_counts(counter, output_folder)
 
-    ###
-    # create the directory output/ if it doesn't exist
-    write_count_words(counter)
+
+if __name__ == "__main__":
+    main()
